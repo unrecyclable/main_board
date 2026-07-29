@@ -1,0 +1,101 @@
+<html>
+<body>
+<pre>
+<h1>µVision Build Log</h1>
+<h2>Tool Versions:</h2>
+IDE-Version: ¦ÌVision V5.28.0.0
+Copyright (C) 2019 ARM Ltd and ARM Germany GmbH. All rights reserved.
+License Information: li chen, hitwh, LIC=GE7DL-0JTSW-UMM9A-1SJN6-8FH82-D6IL7
+ 
+Tool Versions:
+Toolchain:       MDK-ARM Professional  Version: 5.28.0.0
+Toolchain Path:  D:\keil5\ARM\ARMCC\Bin
+C Compiler:      Armcc.exe V5.06 update 6 (build 750)
+Assembler:       Armasm.exe V5.06 update 6 (build 750)
+Linker/Locator:  ArmLink.exe V5.06 update 6 (build 750)
+Library Manager: ArmAr.exe V5.06 update 6 (build 750)
+Hex Converter:   FromElf.exe V5.06 update 6 (build 750)
+CPU DLL:         SARMCM3.DLL V5.28.0.0
+Dialog DLL:      DCM.DLL V1.17.3.0
+Target DLL:      CMSIS_AGDI.dll V1.31.18.0
+Dialog DLL:      TCM.DLL V1.36.2.0
+ 
+<h2>Project:</h2>
+D:\WORK\project\main_board\MDK-ARM\main_board.uvprojx
+Project File Date:  07/24/2026
+
+<h2>Output:</h2>
+*** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\keil5\ARM\ARMCC\Bin'
+Build target 'main_board'
+compiling main.c...
+../Core/Inc/main.h(62): warning:  #1295-D: Deprecated declaration main_task - give arg types
+  void main_task();
+../Core/Inc/main.h(63): warning:  #1295-D: Deprecated declaration sona_task - give arg types
+  void sona_task();
+../Core/Inc/main.h(64): warning:  #1295-D: Deprecated declaration motor_task - give arg types
+  void motor_task();
+../Core/Src/jy901.h(24): warning:  #1295-D: Deprecated declaration jy901_test - give arg types
+  void jy901_test();
+../Core/Src/jy901.h(25): warning:  #1295-D: Deprecated declaration jy901_task - give arg types
+  void jy901_task();
+../Core/Src/jy901.h(26): warning:  #1-D: last line of file ends without a newline
+  void JY901_ParseData(const uint8_t *buf, uint16_t len);
+../Core/Src/ms5837_uart.h(13): warning:  #1295-D: Deprecated declaration ms5837_test - give arg types
+  void ms5837_test();
+../Core/Src/ms5837_uart.h(14): warning:  #1295-D: Deprecated declaration ms5837_task - give arg types
+  void ms5837_task();
+../Core/Src/sht30.h(14): warning:  #1295-D: Deprecated declaration sht30_task - give arg types
+  void sht30_task();
+../Core/Src/serial.h(10): warning:  #1295-D: Deprecated declaration serial_init - give arg types
+  void serial_init();
+../Core/Src/serial.h(17): warning:  #1-D: last line of file ends without a newline
+  #endif
+../Core/Src/main.c(73): warning:  #1295-D: Deprecated declaration can_motor_init - give arg types
+  void can_motor_init();
+../Core/Src/main.c(103): warning:  #1295-D: Deprecated declaration can2_init - give arg types
+  void can2_init();
+../Core/Src/main.c(190): warning:  #550-D: variable "uxReturnedBits"  was set but never used
+  EventBits_t uxReturnedBits;
+../Core/Src/main.c(322): warning:  #177-D: variable "end"  was declared but never referenced
+  	uint8_t end[8]={0xfd};
+../Core/Src/main.c(441): warning:  #177-D: variable "itar0"  was declared but never referenced
+    float itar0,itar1;
+../Core/Src/main.c(441): warning:  #177-D: variable "itar1"  was declared but never referenced
+    float itar0,itar1;
+../Core/Src/main.c(445): warning:  #177-D: variable "tari"  was declared but never referenced
+  float tari=1.0;
+../Core/Src/main.c(446): warning:  #177-D: variable "tar_pos"  was declared but never referenced
+  		float tar_pos=90;
+../Core/Src/main.c(517): warning:  #550-D: variable "ch"  was set but never used
+  int ch;
+../Core/Src/main.c: 20 warnings, 0 errors
+linking...
+Program Size: Code=25332 RO-data=760 RW-data=424 ZI-data=21824  
+FromELF: creating hex file...
+"main_board\main_board.axf" - 0 Error(s), 20 Warning(s).
+
+<h2>Software Packages used:</h2>
+
+Package Vendor: ARM
+                http://www.keil.com/pack/ARM.CMSIS.5.5.1.pack
+                ARM.CMSIS.5.5.1
+                CMSIS (Cortex Microcontroller Software Interface Standard)
+   * Component: CORE Version: 5.2.0
+
+Package Vendor: Keil
+                http://www.keil.com/pack/Keil.STM32F4xx_DFP.2.9.0.pack
+                Keil.STM32F4xx_DFP.2.9.0
+                STMicroelectronics STM32F4 Series Device Support, Drivers and Examples
+
+<h2>Collection of Component include folders:</h2>
+  .\RTE\_main_board
+  D:\keil5\Packs\ARM\CMSIS\5.5.1\CMSIS\Core\Include
+  D:\keil5\Packs\Keil\STM32F4xx_DFP\2.9.0\Drivers\CMSIS\Device\ST\STM32F4xx\Include
+
+<h2>Collection of Component Files used:</h2>
+
+   * Component: ARM::CMSIS:CORE:5.2.0
+Build Time Elapsed:  00:00:02
+</pre>
+</body>
+</html>
