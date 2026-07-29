@@ -89,6 +89,12 @@ const osThreadAttr_t motorTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+osThreadId_t controlTaskHandle;
+const osThreadAttr_t controlTask_attributes = {
+  .name = "controlTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE END FunctionPrototypes */
 
 void StartDefaultTask(void *argument);
@@ -132,6 +138,7 @@ void MX_FREERTOS_Init(void) {
 	//sht30TaskHandle = osThreadNew(sht30_task, NULL, &sht30Task_attributes);
 	//mainTaskHandle = osThreadNew(main_task, NULL, &mainTask_attributes);
 	motorTaskHandle =osThreadNew(motor_task, NULL, &motorTask_attributes);
+	controlTaskHandle =osThreadNew(control_task, NULL, &controlTask_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */

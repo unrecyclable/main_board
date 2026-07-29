@@ -114,6 +114,33 @@ uint8_t uart4_buffer[uart4_buffer_size]={0};
 float time4=0;
 float sona4len=0;
 int test_count=0;
+int uart4_flag=0;
+uint8_t uart4_data[uart4_buffer_size];
+
+
+void control_task()
+{
+	HAL_UART_Receive_DMA(&huart4, uart4_buffer, uart4_buffer_size);
+ __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+	
+	while(1)
+	{
+		
+		int i=0;
+		for(;i<32;i++)
+			{
+		uint8_t ch;
+				ch=uart4_data[i];
+				if(ch==0xfb)
+					break;
+			}
+			can2_send_long(0x400,uart4_data+i,sizeof(float)*8);
+			vTaskDelay(20);
+		}
+
+}	
+	
+
 void UART4_IT(void)
 {
     // ????
@@ -122,20 +149,20 @@ void UART4_IT(void)
         __HAL_UART_CLEAR_IDLEFLAG(&huart4);
         // ? DMA,???
         HAL_UART_DMAStop(&huart4);
-        //uint16_t len = uart4_buffer_size- __HAL_DMA_GET_COUNTER(huart4.hdmarx);
-			int i=0;
-			while(1)
-			{
-		uint8_t ch;
-				ch=uart4_buffer[i];
-				if(ch==0xfb)
-					break;
-				else
-					i++;
-			}
-			can2_send_long(0x400,uart4_buffer+i,sizeof(float)*8);
+        uint16_t len = uart4_buffer_size- __HAL_DMA_GET_COUNTER(huart4.hdmarx);
+			memcpy(uart4_data,uart4_buffer,len);
+//			int i=0;
+//			while(1)
+//			{
+//		uint8_t ch;
+//				ch=uart4_data[i];
+//				if(ch==0xfb)
+//					break;
+//				else
+//					i++;
+//			}
+//			can2_send_long(0x400,uart4_data+i,sizeof(float)*8);
 			//printf("%d\n",test_count);
-			test_count++;
 //			for(int j=0;j<4*8;j++)
 //				printf("%x",uart4_buffer[j]);
 //				printf("\n");
@@ -167,52 +194,52 @@ void UART4_IT(void)
 }
 
 
-void control_task()	
-{
-	//can_init();
-	can_motor_init();
-	xEventGroup = xEventGroupCreate();
-		HAL_UART_Receive_DMA(&huart4, uart4_buffer,uart4_buffer_size);
-    __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
-		
-	timer_start();
-	while(1)
-	{
-uint8_t data[8]={0xfa};
-if(time4!=0)
-	printf("4=%f\n",time4);
-	can_send(0x01,data,8);
-time4=0;
+//void control_task()	
+//{
+//	//can_init();
+//	can_motor_init();
+//	xEventGroup = xEventGroupCreate();
+//		HAL_UART_Receive_DMA(&huart4, uart4_buffer,uart4_buffer_size);
+//    __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+//		
+//	timer_start();
+//	while(1)
+//	{
+//uint8_t data[8]={0xfa};
+//if(time4!=0)
+//	printf("4=%f\n",time4);
+//	can_send(0x01,data,8);
+//time4=0;
 
-	timer=0;
-		//printf("working\n");
-//vTaskDelay(pdMS_TO_TICKS(2000));
-EventBits_t uxReturnedBits;
-	uxReturnedBits = xEventGroupWaitBits(
-            xEventGroup,            // ???????
-           BIT_UART4_RX_DONE,               // ???????
-            pdTRUE,                 // ????????????
-            pdFALSE,                 // ????????? (???)
-            pdMS_TO_TICKS(1000)           // ?????,??????
-        );
-//		if(uart2itflag==1||uart4itflag==1)
-////		//if((uxReturnedBits&BIT_UART2_RX_DONE)||(uxReturnedBits&BIT_UART4_RX_DONE))
-//		{
-//			//calc_pos(sona2len,sona4len,0/180*M_PI);	
-//			//printf("get\n");
-//			printf("2=%f,4=%f\n",time2,time4);
-//			//printf("2=%f\n",sona2len);
-//			//printf("4=%f\n",sona4len);
-//			uart2itflag=0;
-//			uart4itflag=0;
-//			//printf("%f,%f,%f\n",pos_x,pos_y,pos_z);
-//		} 
+//	timer=0;
+//		//printf("working\n");
+////vTaskDelay(pdMS_TO_TICKS(2000));
+//EventBits_t uxReturnedBits;
+//	uxReturnedBits = xEventGroupWaitBits(
+//            xEventGroup,            // ???????
+//           BIT_UART4_RX_DONE,               // ???????
+//            pdTRUE,                 // ????????????
+//            pdFALSE,                 // ????????? (???)
+//            pdMS_TO_TICKS(1000)           // ?????,??????
+//        );
+////		if(uart2itflag==1||uart4itflag==1)
+//////		//if((uxReturnedBits&BIT_UART2_RX_DONE)||(uxReturnedBits&BIT_UART4_RX_DONE))
+////		{
+////			//calc_pos(sona2len,sona4len,0/180*M_PI);	
+////			//printf("get\n");
+////			printf("2=%f,4=%f\n",time2,time4);
+////			//printf("2=%f\n",sona2len);
+////			//printf("4=%f\n",sona4len);
+////			uart2itflag=0;
+////			uart4itflag=0;
+////			//printf("%f,%f,%f\n",pos_x,pos_y,pos_z);
+////		} 
 
 
-	
-//vTaskDelay(pdMS_TO_TICKS(100));
-	}
-}
+//	
+////vTaskDelay(pdMS_TO_TICKS(100));
+//	}
+//}
 
 typedef struct{
 	float kp;
@@ -663,8 +690,7 @@ int main(void)
 	can_motor_init();
 	key_init();
 	can2_init();
-	HAL_UART_Receive_DMA(&huart4, uart4_buffer, uart4_buffer_size);
-  __HAL_UART_ENABLE_IT(&huart4, UART_IT_IDLE);
+
 //	controler test={.stick_lx=0,.stick_rx=0,.head=0xfb,.arm=0,.stick_ly=0,.stick_ry=0,.light=0,.cam=0};
 //	while(1)
 //	{
