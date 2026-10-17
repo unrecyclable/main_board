@@ -117,7 +117,61 @@ int test_count=0;
 int uart4_flag=0;
 uint8_t uart4_data[uart4_buffer_size];
 
+int can2_flag=0;
+typedef struct{
+	int head;
+float roll;
+	float pitch;
+	float yaw;
+}jy901_att;
+jy901_att att={.head=0xfd};
+typedef struct
+{
+  int head;
+  float roll;
+  float pitch;
+  float yaw;
+  float current;
+  float len;
+} upline_pack;
+upline_pack up = {.head = 0xfd};
+void showarray(uint8_t*array,int len)
+{
+	for(int i=0;i<len;i++)
+		printf("%02X",array[i]);
+	printf("\n");
+}
 
+typedef struct
+{
+  int head;
+  float current;
+  float gain;
+} cable_control;
+cable_control cable_con = {.head = 0xf1, .current = 4.0};
+typedef struct
+{
+	uint16_t id;
+	uint8_t data[8];
+	uint8_t flag;
+}c620_rawdata;
+typedef struct
+{
+	uint16_t id;
+	float angle;
+	float rate;
+	float i;
+	float tempature;
+	uint8_t flag;
+}c620_msg;
+c620_rawdata motor_data;
+c620_msg motor_msg;  //大
+c620_msg motor_msg1; //小
+float zero_angle=0;
+float last_angle=0;
+int first_flag=0;
+float round_count=0;
+int send_count=0;
 void control_task()
 {
 	HAL_UART_Receive_DMA(&huart4, uart4_buffer, uart4_buffer_size);
@@ -126,15 +180,62 @@ void control_task()
 	while(1)
 	{
 		
+		if(uart4_flag==1)
+		{
 		int i=0;
-		for(;i<32;i++)
+		for(;i<80;i++)
 			{
 		uint8_t ch;
 				ch=uart4_data[i];
 				if(ch==0xfb)
+				{
+					can2_send_long(0x400,uart4_data+i,sizeof(float)*10);
 					break;
+				}
+				if(ch==0xfe)
+				{
+					can2_send_long(0x410,uart4_data+i,sizeof(int)*2);
+					break;
+				}
+				if(ch==0xf1)
+				{
+				uint8_t*p=(uint8_t*)&cable_con;
+					for(int j=0;j<3*4;j++)
+					{
+					p[j]=uart4_data[i+j];
+					}
+				}
+					
 			}
-			can2_send_long(0x400,uart4_data+i,sizeof(float)*8);
+				//can2_send_long(0x400,uart4_data+i,sizeof(float)*10);
+			uart4_flag=0;
+		}
+		float cable_len;
+		float r=1;
+		float angle=motor_msg1.angle-zero_angle;
+		if(angle<0)
+		{
+			angle+=360;
+		}
+		cable_len=r*(angle+(round_count*2*3.14));
+		if(send_count>50)
+		{
+			up.roll=0;
+			up.pitch=0;
+			up.yaw=0;
+			up.current=cable_con.current;
+			up.len=cable_len;
+			HAL_UART_Transmit(&huart4,(uint8_t*)&up,sizeof(upline_pack),0xff);
+			printf("len=%f\n",up.len);
+			send_count=0;
+		}
+//		if(can2_flag)
+//		{
+//		HAL_UART_Transmit(&huart4,(uint8_t*)&att,sizeof(jy901_att),0xff);
+//		showarray((uint8_t*)&att,4*4);
+//			can2_flag=0;
+//		}
+		send_count++;
 			vTaskDelay(20);
 		}
 
@@ -151,6 +252,8 @@ void UART4_IT(void)
         HAL_UART_DMAStop(&huart4);
         uint16_t len = uart4_buffer_size- __HAL_DMA_GET_COUNTER(huart4.hdmarx);
 			memcpy(uart4_data,uart4_buffer,len);
+			if(uart4_flag==0)
+				uart4_flag=1;
 //			int i=0;
 //			while(1)
 //			{
@@ -303,8 +406,8 @@ void can2_init()
 {
 	CAN_FilterTypeDef filter;
 	filter.FilterActivation=ENABLE;
-	filter.FilterBank=1;
-	filter.FilterFIFOAssignment=CAN_FilterFIFO0;
+	filter.FilterBank=14;
+	filter.FilterFIFOAssignment=CAN_FilterFIFO1;
 	filter.FilterIdHigh=0;
 	filter.FilterIdLow=0;
 	filter.FilterMaskIdHigh=0;
@@ -312,7 +415,7 @@ void can2_init()
 	filter.FilterMode=CAN_FILTERMODE_IDMASK;
 	filter.FilterScale=CAN_FILTERSCALE_32BIT;
 	HAL_CAN_ConfigFilter(&hcan2,&filter);
-	HAL_CAN_ActivateNotification(&hcan2,CAN_IT_RX_FIFO0_MSG_PENDING);
+	HAL_CAN_ActivateNotification(&hcan2,CAN_IT_RX_FIFO1_MSG_PENDING);
 	HAL_CAN_Start(&hcan2);
 	
 }
@@ -394,24 +497,33 @@ void can_send(uint16_t id,uint8_t*data,int len)
 	HAL_CAN_AddTxMessage(&hcan1,&tx,data,&mailbox);
 
 }
-typedef struct
+
+
+void HAL_CAN_RxFifo1MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-	uint16_t id;
-	uint8_t data[8];
-	uint8_t flag;
-}c620_rawdata;
-typedef struct
-{
-	uint16_t id;
-	float angle;
-	float rate;
-	float i;
-	float tempature;
-	uint8_t flag;
-}c620_msg;
-c620_rawdata motor_data;
-c620_msg motor_msg;
-c620_msg motor_msg1;
+	if(hcan->Instance==CAN2)
+	{
+		
+		CAN_RxHeaderTypeDef rx;
+		uint8_t data[8];
+		HAL_CAN_GetRxMessage(&hcan2,CAN_RX_FIFO0,&rx,data);
+		uint8_t*p=(uint8_t*)&att;
+		for(int i=0;i<4;i++)
+		{if(rx.StdId==(0x300+i))
+		{
+			memcpy(p+i*8,data,8);
+		}
+		}
+		can2_flag=1;
+		
+
+		//printf("%f\n",motor_msg.i);
+	}
+	
+}
+
+
+
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {if(hcan->Instance==CAN1)
 	{
@@ -432,9 +544,44 @@ void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 		motor_msg1.i=(float)((int16_t)(data[4]<<8|data[5]))/16384*20;
 		motor_msg1.tempature=(float)(int16_t)data[6];
 		motor_msg1.id=rx.StdId;
+			if(first_flag==1)
+			{if(motor_msg1.angle-last_angle>200)
+			{
+			round_count+=1;
+			}
+			if(motor_msg1.angle-last_angle<-200)
+			{
+			round_count-=1;
+			}	
+			zero_angle=motor_msg1.angle;
+			}
+			//printf("%f\n",motor_msg1.angle-last_angle);
+			//printf("%f\n",round_count);
+			last_angle=motor_msg1.angle;
+			first_flag=1;
+			
 		}
+
 		//printf("%f\n",motor_msg.i);
 	}
+//	if(hcan->Instance==CAN2)
+//	{
+//		
+//		CAN_RxHeaderTypeDef rx;
+//		uint8_t data[8];
+//		HAL_CAN_GetRxMessage(&hcan2,CAN_RX_FIFO0,&rx,data);
+//		uint8_t*p=(uint8_t*)&att;
+//		for(int i=0;i<4;i++)
+//		{if(rx.StdId==(0x300+i))
+//		{
+//			memcpy(p+i*8,data,8);
+//		}
+//		}
+//		can2_flag=1;
+		
+
+		//printf("%f\n",motor_msg.i);
+//	}
 	
 }
 
@@ -465,13 +612,44 @@ void motor_task()
   {
 	float target1=-2400;
   float target0=-480;  
+		float max_target1=-3600;
+		float max_target0=-720;
   float itar0,itar1;
   float out0;
   float out1;
 	int key=get_key();
 float tari=1.0;
+		int manual_flag=0;
 		float tar_pos=90;
-if(key==1)
+		if(cable_con.gain!=0)
+		{
+		manual_flag=0;
+		if(cable_con.gain>0)
+		{
+			key=2;
+		}
+		else if(cable_con.gain<0)
+		{
+		key=1;
+		}
+		}
+		else
+		{
+			manual_flag=1;
+		}
+		//printf("%f,%f\n",cable_con.current,cable_con.gain);
+		if(manual_flag)
+		{
+			target0=-480;
+			target1=-2400;
+		}
+		else
+		{
+		target0=fabs(cable_con.gain)*max_target0;
+		target1=fabs(cable_con.gain)*max_target1;	
+		}
+		
+if(key==1)//收
   {
 		if(overflag==0)
 		{
@@ -521,9 +699,10 @@ else if(key==2)
 //			out0=5;
 //		if(out0<-5)
 //			out0=-5;
-//		//out0=pid_control(&ipid,tari-motor_msg.i);
-//			motor_i[0]=out0;
-		motor_i[0]=0;
+		tari=cable_con.current;
+		out0=pid_control(&ipid,tari-motor_msg.i);
+			motor_i[0]=out0;
+		//motor_i[0]=0;
 		motor_i[2]=0;
 		can_motor_set_i();
   }
@@ -658,7 +837,6 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
   HAL_Init();
 
   /* USER CODE BEGIN Init */
@@ -688,6 +866,7 @@ int main(void)
   MX_CAN2_Init();
   /* USER CODE BEGIN 2 */
 	can_motor_init();
+	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,1);
 	key_init();
 	can2_init();
 

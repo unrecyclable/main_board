@@ -22,33 +22,11 @@ Dialog DLL:      TCM.DLL V1.36.2.0
  
 <h2>Project:</h2>
 D:\WORK\project\main_board\MDK-ARM\main_board.uvprojx
-Project File Date:  07/24/2026
+Project File Date:  08/06/2026
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 6 (build 750)', folder: 'D:\keil5\ARM\ARMCC\Bin'
 Build target 'main_board'
-compiling freertos.c...
-../Core/Inc/main.h(62): warning:  #1295-D: Deprecated declaration main_task - give arg types
-  void main_task();
-../Core/Inc/main.h(63): warning:  #1295-D: Deprecated declaration sona_task - give arg types
-  void sona_task();
-../Core/Inc/main.h(64): warning:  #1295-D: Deprecated declaration motor_task - give arg types
-  void motor_task();
-../Core/Inc/main.h(65): warning:  #1295-D: Deprecated declaration control_task - give arg types
-  void control_task();
-../Core/Src/jy901.h(24): warning:  #1295-D: Deprecated declaration jy901_test - give arg types
-  void jy901_test();
-../Core/Src/jy901.h(25): warning:  #1295-D: Deprecated declaration jy901_task - give arg types
-  void jy901_task();
-../Core/Src/jy901.h(26): warning:  #1-D: last line of file ends without a newline
-  void JY901_ParseData(const uint8_t *buf, uint16_t len);
-../Core/Src/ms5837_uart.h(13): warning:  #1295-D: Deprecated declaration ms5837_test - give arg types
-  void ms5837_test();
-../Core/Src/ms5837_uart.h(14): warning:  #1295-D: Deprecated declaration ms5837_task - give arg types
-  void ms5837_task();
-../Core/Src/sht30.h(14): warning:  #1295-D: Deprecated declaration sht30_task - give arg types
-  void sht30_task();
-../Core/Src/freertos.c: 10 warnings, 0 errors
 compiling main.c...
 ../Core/Inc/main.h(62): warning:  #1295-D: Deprecated declaration main_task - give arg types
   void main_task();
@@ -78,23 +56,25 @@ compiling main.c...
   void can_motor_init();
 ../Core/Src/main.c(103): warning:  #1295-D: Deprecated declaration can2_init - give arg types
   void can2_init();
-../Core/Src/main.c(349): warning:  #177-D: variable "end"  was declared but never referenced
+../Core/Src/main.c(220): warning:  #1035-D: single-precision operand implicitly converted to double-precision
+  		cable_len=r*(angle+(round_count*2*3.14));
+../Core/Src/main.c(452): warning:  #177-D: variable "end"  was declared but never referenced
   	uint8_t end[8]={0xfd};
-../Core/Src/main.c(468): warning:  #177-D: variable "itar0"  was declared but never referenced
+../Core/Src/main.c(617): warning:  #177-D: variable "itar0"  was declared but never referenced
     float itar0,itar1;
-../Core/Src/main.c(468): warning:  #177-D: variable "itar1"  was declared but never referenced
+../Core/Src/main.c(617): warning:  #177-D: variable "itar1"  was declared but never referenced
     float itar0,itar1;
-../Core/Src/main.c(472): warning:  #177-D: variable "tari"  was declared but never referenced
-  float tari=1.0;
-../Core/Src/main.c(473): warning:  #177-D: variable "tar_pos"  was declared but never referenced
+../Core/Src/main.c(623): warning:  #177-D: variable "tar_pos"  was declared but never referenced
   		float tar_pos=90;
-../Core/Src/main.c(544): warning:  #550-D: variable "ch"  was set but never used
+../Core/Src/main.c(723): warning:  #550-D: variable "ch"  was set but never used
   int ch;
-../Core/Src/main.c: 20 warnings, 0 errors
+../Core/Src/main.c(869): warning:  #188-D: enumerated type mixed with another type
+  	HAL_GPIO_WritePin(GPIOC,GPIO_PIN_1,1);
+../Core/Src/main.c: 21 warnings, 0 errors
 linking...
-Program Size: Code=25392 RO-data=800 RW-data=432 ZI-data=22080  
+Program Size: Code=30352 RO-data=800 RW-data=512 ZI-data=22080  
 FromELF: creating hex file...
-"main_board\main_board.axf" - 0 Error(s), 30 Warning(s).
+"main_board\main_board.axf" - 0 Error(s), 21 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -117,7 +97,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.2.0
-Build Time Elapsed:  00:00:02
+Build Time Elapsed:  00:00:03
 </pre>
 </body>
 </html>

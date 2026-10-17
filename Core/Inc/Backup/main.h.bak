@@ -62,6 +62,7 @@ void Error_Handler(void);
 void main_task();
 void sona_task();
 void motor_task();
+void control_task();
 void UART5_IT(void);
 void UART4_IT(void);
 /* USER CODE END Private defines */
